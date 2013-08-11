@@ -1,0 +1,38 @@
+import testing ;
+import notfile ;
+import os ;
+import errors ;
+
+BOOST_ROOT = [ os.environ BOOST_ROOT ] ;
+if ! $(BOOST_ROOT)
+{
+    errors.user-error "*** BOOST_ROOT must be set to a Boost installation." ;
+}
+use-project /boost : $(BOOST_ROOT) ;
+
+
+SQLITE3_ROOT = [ os.environ SQLITE3_ROOT ] ;
+if ! $(SQLITE3_ROOT)
+{
+    errors.user-error "*** SQLITE3_ROOT must be set to a SQLite3 installation." ;
+}
+use-project /sqlite3 : $(SQLITE3_ROOT) ;
+
+
+notfile db_models : @db_model_gen ;
+actions db_model_gen
+{
+    ./sqlite-query-gen.py --dir=tmp --file=db.hpp --indent=0 --template=./sqlite-query-gen.tmpl core
+}
+
+compile
+    create-table-tests.cpp
+    :
+    <library>/boost/test
+    <library>/boost/system
+    <library>/sqlite3
+    <dependency>db_models
+    <include>tmp
+    <cxxflags>-fmax-errors=1
+    <link>static
+    ;

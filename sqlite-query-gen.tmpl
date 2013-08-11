@@ -1,0 +1,24 @@
+#pragma once
+
+#include <sqlite3.h>
+
+class scoped_exit
+{
+public:
+    explicit scoped_exit(sqlite3_stmt** stmt)
+    :   stmt_(stmt)
+    {}
+
+    ~scoped_exit()
+    {
+        sqlite3_finalize(*stmt_);
+    }
+
+    scoped_exit(scoped_exit const&) = delete;
+    scoped_exit& operator=(scoped_exit const&) = delete;
+
+private:
+    sqlite3_stmt** stmt_;
+};
+
+%%
